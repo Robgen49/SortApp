@@ -1,11 +1,67 @@
-import { ISort } from "./ISort";
-import { BinarySearchTree } from "./ThreeSort/BinaryThreeSort";
 
-export class SortMethods implements ISort {
+class Node {
+   value: any;
+   left: any;
+   right: any;
+   constructor(value: any) {
+      this.value = value;
+      this.left = null;
+      this.right = null;
+   }
+}
 
-   // MARK: - Метод  сортировки вставками
+class BinaryTree {
+   root: any;
+   constructor() {
+      this.root = null;
+   }
 
-   insertionSort<Type>(arr: Array<Type>): Array<Type> {
+   insert(value: any) {
+      const newNode = new Node(value);
+      if (this.root === null) {
+         this.root = newNode;
+      } else {
+         let currentNode = this.root;
+         while (true) {
+            if (value < currentNode.value) {
+               if (currentNode.left === null) {
+                  currentNode.left = newNode;
+                  break;
+               }
+               currentNode = currentNode.left;
+            } else {
+               if (currentNode.right === null) {
+                  currentNode.right = newNode;
+                  break;
+               }
+               currentNode = currentNode.right;
+            }
+         }
+      }
+   }
+
+   inorderTraversal() {
+      const result = [];
+      const stack:Node[] = [];
+      let currentNode = this.root;
+      while (currentNode !== null || stack.length > 0) {
+         while (currentNode !== null) {
+            stack.push(currentNode);
+            currentNode = currentNode.left;
+         }
+         if (stack.length > 0) {
+            currentNode = stack.pop();
+            result.push(currentNode.value);
+            currentNode = currentNode.right;
+         }
+      }
+      return result;
+   }
+}
+
+export class SortMethods {
+
+   static insertionSort<Type>(arr: Array<Type>): Array<Type> {
       for (let i = 1; i < arr.length; i++) {
          let current = arr[i];
          let j = i - 1;
@@ -18,9 +74,7 @@ export class SortMethods implements ISort {
       return arr;
    }
 
-   // MARK: -Метод сортировки выбором:
-
-   selectionSort<Type>(arr: Array<Type>): Array<Type> {
+   static selectionSort<Type>(arr: Array<Type>): Array<Type> {
       for (let i = 0; i < arr.length - 1; i++) {
          let minIndex = i;
          for (let j = i + 1; j < arr.length; j++) {
@@ -35,9 +89,7 @@ export class SortMethods implements ISort {
       return arr;
    }
 
-   // MARK: - Метод сортировки обменом:
-
-   bubbleSort<Type>(arr: Array<Type>): Array<Type> {
+   static bubbleSort<Type>(arr: Array<Type>): Array<Type> {
       for (let i = 0; i < arr.length - 1; i++) {
          for (let j = 0; j < arr.length - i - 1; j++) {
             if (arr[j] > arr[j + 1]) {
@@ -48,9 +100,7 @@ export class SortMethods implements ISort {
       return arr;
    }
 
-   // MARK: - Метод быстрой сортировки:
-
-   quickSort<Type>(arr: Array<Type>): Array<Type> {
+   static quickSort<Type>(arr: Array<Type>): Array<Type> {
       if (arr.length <= 1) {
          return arr;
       }
@@ -68,19 +118,11 @@ export class SortMethods implements ISort {
             right.push(arr[i]);
          }
       }
-      return [...this.quickSort(left), pivot, ...this.quickSort(right)];
+      return [...SortMethods.quickSort(left), pivot, ...SortMethods.quickSort(right)];
    }
 
-   threeSort<Type>(arr: Array<Type>): Array<Type> {
-      const tree = new BinarySearchTree();
-      for (let i = 0; i < arr.length; i++) {
-         tree.insert(arr[i]);
-      }
-      return tree.traverseInOrder();
-   }
-
-   heapSort<Type>(arr: Array<Type>): Array<Type> {
-      function heapify<Type>(arr: Array<Type>, n: number, i: number):void {
+   static heapSort<Type>(arr: Array<Type>): Array<Type> {
+      function heapify<Type>(arr: Array<Type>, n: number, i: number): void {
          let largest = i;
          const left = 2 * i + 1;
          const right = 2 * i + 2;
@@ -107,9 +149,7 @@ export class SortMethods implements ISort {
       return arr;
    }
 
-   // Метод сортировки Шелла:
-
-   shellSort<Type>(arr: Array<Type>): Array<Type> {
+   static shellSort<Type>(arr: Array<Type>): Array<Type> {
       const n = arr.length;
       let gap = Math.floor(n / 2);
       while (gap > 0) {
@@ -127,9 +167,8 @@ export class SortMethods implements ISort {
       return arr;
    }
 
-   // Метод сортировки слиянием:
+   static mergeSort<Type>(arr: Array<Type>): Array<Type> {
 
-   mergeSort<Type>(arr: Array<Type>): Array<Type> {
       function merge(left: Array<Type>, right: Array<Type>): Array<Type> {
          const result = [];
          let i = 0;
@@ -151,8 +190,14 @@ export class SortMethods implements ISort {
          return arr;
       }
       const mid = Math.floor(arr.length / 2);
-      const left = this.mergeSort(arr.slice(0, mid));
-      const right = this.mergeSort(arr.slice(mid));
+      const left = SortMethods.mergeSort(arr.slice(0, mid));
+      const right = SortMethods.mergeSort(arr.slice(mid));
       return merge(left, right);
+   }
+   
+   static sortWithTree<Type>(arr: Array<Type>): Array<Type>{
+      const tree = new BinaryTree();
+      arr.forEach(el => tree.insert(el));
+      return tree.inorderTraversal();
    }
 }

@@ -9,7 +9,7 @@ export interface MenuProps {
    submitHandler(event: React.FormEvent<HTMLFormElement>): void,
 }
 
-const Menu = ({ changeHandler, submitHandler,items, isActive }: MenuProps) => {
+const Menu = ({ changeHandler, submitHandler, items, isActive }: MenuProps) => {
    return (
             <div className={classNames(cls.wrapper)} >
                <form className={cls.wrapper} onSubmit={submitHandler} action="">
