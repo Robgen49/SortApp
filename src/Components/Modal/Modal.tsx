@@ -1,15 +1,17 @@
 import classNames from "classnames";
-import { completedMethodsType, sortListType } from "../../App";
-import Loader from "../Loader/Loader"
+import { completedMethodsType } from "../../App";
+import Loader from "../Loader/Loader";
+import Button from "../Button/Button";
 import cls from "./Modal.module.css"
 
 export interface ModalProps {
    selectedMethods: string[],
    isOpen: boolean,
-   completedMethods:completedMethodsType,
+   completedMethods: completedMethodsType,
+   loadFileHandler: (event: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-const Modal = ({ selectedMethods, completedMethods }: ModalProps) => {
+const Modal = ({ selectedMethods, completedMethods, loadFileHandler }: ModalProps) => {
 
    return (
       <div className={classNames(cls.wrapper)}>
@@ -27,6 +29,9 @@ const Modal = ({ selectedMethods, completedMethods }: ModalProps) => {
                </div>
             </div>
          )}
+         <div className={cls.buttonWrapper} >
+            <Button onClick={loadFileHandler} isActive={Object.keys(completedMethods).length === selectedMethods.length}>Скачать файл!</Button>
+         </div>
       </div>
    );
 };

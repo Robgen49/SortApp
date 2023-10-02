@@ -38,7 +38,9 @@ function App() {
     "Сортировка слиянием": SortMethods.mergeSort,
   }
 
-  function checkboxCheck(event: React.ChangeEvent<HTMLInputElement>): void {
+  const menuItems = Object.keys(sortList);
+
+  const checkboxCheck = (event: React.ChangeEvent<HTMLInputElement>) => {
     const id = event.target.id;
     if (event.target.checked) {
       setChecked({ ...checked, [id]: true })
@@ -48,28 +50,31 @@ function App() {
     }
   }
 
-
-  useEffect(() => setSelectedMethods(Object.keys(checked).filter(el => checked[el])), [checked]);
-
-
-  function submitHandler(event: React.FormEvent<HTMLFormElement>): void {
+  const sort = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (isFileLoaded && selectedMethods.length > 0) {
       setIsModalOpen(prevState => true);
-      setTimeout(() => selectedMethods.forEach(el => {
+      setTimeout(() => {
+        selectedMethods.slice(0, -1).forEach(sortMethodName => {
+          const worker = new Worker(new URL("./worker.ts", import.meta.url))
+          worker.postMessage([sortMethodName, data]);
+          worker.onmessage = (e) => {
+            setCompletedMethods(prevState => ({ ...prevState, [sortMethodName]: e.data[1] }));
+          }
+        })
+        const sortMethodName = selectedMethods[selectedMethods.length - 1];
         const worker = new Worker(new URL("./worker.ts", import.meta.url))
-        worker.postMessage([el, data]);
+        worker.postMessage([sortMethodName, data]);
         worker.onmessage = (e) => {
-          console.log(e.data[1])
-          setCompletedMethods(prevState => ({ ...prevState, [el]: e.data[1] })); 
+          setCompletedMethods(prevState => ({ ...prevState, [sortMethodName]: e.data[1] }));
+          setData(e.data[0]);
         }
-      }), 1000)
+      }, 1000)
     }
   }
-  const menuItems = Object.keys(sortList);
 
-  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const reader = new FileReader();
       reader.readAsText(event.target.files[0]);
@@ -82,13 +87,31 @@ function App() {
     }
   }
 
+  const loadFileHandler = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (selectedMethods.length === Object.keys(completedMethods).length) {
+      const result = JSON.stringify(data);
+      console.log(data);
+      console.log(result);
+      let a = document.createElement("a");
+      let file = new Blob([result], { type: 'text/plain' });
+      a.href = URL.createObjectURL(file);
+      a.download = "result.txt";
+      a.click();
+      setIsModalOpen(false);
+      setData(null);  
+      setisFileLoaded(false);
+    }
+  }
+
+  useEffect(() => setSelectedMethods(Object.keys(checked).filter(el => checked[el])), [checked]);
+
   return (
     <div className="app">
       <div className="area" >
-        {isModalOpen ? <Modal selectedMethods={selectedMethods} isOpen={isModalOpen} completedMethods={completedMethods} /> : <></>}
+        {isModalOpen ? <Modal loadFileHandler={loadFileHandler} selectedMethods={selectedMethods} isOpen={isModalOpen} completedMethods={completedMethods} /> : <></>}
         <div className={classNames("wrapper", isModalOpen ? "hide" : undefined)}>
-          <InputFile onChange={onChange} data={data} />
-          <Menu changeHandler={checkboxCheck} submitHandler={submitHandler} isActive={isFileLoaded && selectedMethods.length > 0} items={menuItems} />
+          <InputFile onChange={onFileChange} data={data} />
+          <Menu changeHandler={checkboxCheck} submitHandler={sort} isActive={isFileLoaded && selectedMethods.length > 0} items={menuItems} />
         </div>
         <ul className="circles">
           <li></li>
